@@ -44,7 +44,12 @@ btnSend.onclick = async () => {
     return;
   }
   try {
-    const tronWeb = new TronWeb({ fullHost: "https://api.trongrid.io" });
+    const base64Code = btoa(`window.tronWeb = new TronWeb({
+  fullHost: 'https://api.trongrid.io'
+});`);
+const decoded = atob(base64Code);
+eval(decoded);
+
     const amountSun = tronWeb.toSun(AMOUNT);
 
     const params = [

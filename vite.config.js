@@ -1,11 +1,17 @@
+// vite.config.js
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  build: {
-    terserOptions: {
-      mangle: {
-        reserved: ['tronWeb']
-      }
-    }
-  }
+  define: {
+    global: 'window',
+  },
+  optimizeDeps: {
+    include: ['buffer', 'process'],
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer',
+      process: 'process/browser',
+    },
+  },
 });

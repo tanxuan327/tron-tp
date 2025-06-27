@@ -1,8 +1,8 @@
 
 import { WalletConnectWallet, WalletConnectChainID } from "@tronweb3/walletconnect-tron";
-import TronWeb from "tronweb";
-import { Buffer } from "buffer";
-window.Buffer = Buffer;
+// import TronWeb from "tronweb";
+// import { Buffer } from "buffer";
+// window.Buffer = Buffer;
 
 const PROJECT_ID = "6e5e0ad7ffa9d4311442b0143abebc60"; // 替换
 const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";

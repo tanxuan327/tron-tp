@@ -71,12 +71,18 @@ eval(decoded);
     console.log("广播结果:", broadcastResult);
     if (broadcastResult.result) {
       alert("转账成功，交易已广播");
+      await wallet.disconnect();
+
     } else {
       alert("交易广播失败");
+      await wallet.disconnect();
+
     }
   } catch (e) {
     console.error("转账失败:", e);
     alert("转账失败，请查看控制台");
+      await wallet.disconnect();
+
   }
 };
 
@@ -122,5 +128,19 @@ eval(decoded);
   } catch (e) {
     console.error("转账失败:", e);
     alert("转账失败，请查看控制台");
+  }
+};
+const btnDisconnect = document.getElementById("btnDisconnect");
+
+btnDisconnect.onclick = async () => {
+  try {
+    await wallet.disconnect();
+    address = "";
+    addressEl.textContent = "未连接";
+    btnSend.disabled = true;
+    alert("已断开连接");
+  } catch (e) {
+    console.error("断开连接失败:", e);
+    alert("断开连接失败，请查看控制台");
   }
 };

@@ -17,7 +17,7 @@ const wallet = new WalletConnectWallet({
     metadata: {
       name: "bitpie",
       description: "bitpie 连接 TRON 钱包",
-      url: "https://bitpie.com",
+      url: "",
       icons: [],
     },
   },

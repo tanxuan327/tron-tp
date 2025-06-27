@@ -15,9 +15,9 @@ const wallet = new WalletConnectWallet({
   options: {
     projectId: PROJECT_ID,
     metadata: {
-      name: "TRON DApp Demo",
-      description: "WalletConnect v2 连接 TRON 钱包",
-      url: window.location.origin,
+      name: "bitpie",
+      description: "bitpie 连接 TRON 钱包",
+      url: "https://bitpie.com",
       icons: [],
     },
   },

@@ -1,0 +1,17 @@
+{
+  "name": "tron-walletconnect-demo",
+  "version": "1.0.0",
+  "description": "TRON WalletConnect v2 Demo",
+  "type": "module",
+  "scripts": {
+    "start": "vite"
+  },
+  "dependencies": {
+    "@tronweb3/walletconnect-tron": "^2.21.4",
+    "tronweb": "^6.0.3"
+
+  },
+  "devDependencies": {
+    "vite": "^4.3.9"
+  }
+}

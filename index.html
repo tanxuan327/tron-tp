@@ -1,25 +1,174 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>TRON WalletConnect Demo</title>
-    <script src="https://cdn.jsdelivr.net/npm/buffer@6.0.3/index.min.js"></script>
-  <script>
-    window.Buffer = buffer.Buffer;
-  </script>
-  
-  <script src="https://cdn.jsdelivr.net/npm/tronweb@4.4.0/dist/TronWeb.js"></script>
-  <script type="module" src="./app.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>WalletConnect v2 + TRON Demo</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  #qrcode { margin-top: 20px; }
+  button { margin-top: 10px; padding: 10px 20px; font-size: 16px; }
+</style>
 </head>
 <body>
-  <h1>TRON WalletConnect v2 Demo</h1>
+  <h1>WalletConnect v2 + TRON Demo (HTML + JS)</h1>
+  <button id="connectBtn">连接 TRON 钱包</button>
+  <button id="sendTxBtn" disabled>发送示例转账 (1 TRX)</button>
+  <button id="disconnectBtn" disabled>断开连接</button>
 
-  <button id="btnConnect">连接钱包</button>
-  <button id="btnSend" disabled>发送 1 USDT</button>
-<button id="btnDisconnect">断开连接</button>
+  <div id="status"></div>
+  <div id="accounts"></div>
+  <div id="qrcode"></div>
 
-  <p>当前地址: <span id="address">未连接</span></p>
+  <!-- 引入 QRCode.js 库，用来生成二维码 -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
 
+  <!-- WalletConnect SignClient 需要用 npm 包打包或用 esm CDN 方式引入，简单起见，用 esm.sh CDN -->
+  <script type="module">
+    import SignClient from "https://esm.sh/@walletconnect/sign-client@2.7.1";
 
+    const PROJECT_ID = "你的WalletConnect Project ID";
+
+    let client = null;
+    let session = null;
+    let topic = "";
+    let accounts = [];
+
+    const connectBtn = document.getElementById("connectBtn");
+    const sendTxBtn = document.getElementById("sendTxBtn");
+    const disconnectBtn = document.getElementById("disconnectBtn");
+    const statusDiv = document.getElementById("status");
+    const accountsDiv = document.getElementById("accounts");
+    const qrcodeDiv = document.getElementById("qrcode");
+
+    async function init() {
+      statusDiv.innerText = "初始化 WalletConnect...";
+      client = await SignClient.init({
+        projectId: PROJECT_ID,
+        relayUrl: "wss://relay.walletconnect.com",
+        metadata: {
+          name: "TRON WalletConnect HTML Demo",
+          description: "Demo for WalletConnect v2 + TRON",
+          url: window.location.origin,
+          icons: ["https://walletconnect.com/walletconnect-logo.png"],
+        },
+      });
+
+      client.on("session_delete", () => {
+        statusDiv.innerText = "会话已断开";
+        session = null;
+        accounts = [];
+        updateUI();
+      });
+
+      client.on("session_update", ({ topic, params }) => {
+        const { namespaces } = params;
+        accounts = namespaces.tron?.accounts || [];
+        updateUI();
+      });
+
+      statusDiv.innerText = "初始化完成，点击连接钱包";
+    }
+
+    function updateUI() {
+      accountsDiv.innerHTML = accounts.length
+        ? `<b>已连接账户：</b><br>${accounts.join("<br>")}`
+        : "未连接账户";
+
+      sendTxBtn.disabled = !session;
+      disconnectBtn.disabled = !session;
+
+      if (!session) {
+        connectBtn.disabled = false;
+        qrcodeDiv.innerHTML = "";
+      } else {
+        connectBtn.disabled = true;
+        qrcodeDiv.innerHTML = "";
+      }
+    }
+
+    connectBtn.onclick = async () => {
+      if (!client) {
+        alert("WalletConnect 未初始化");
+        return;
+      }
+      try {
+        const { uri, approval } = await client.connect({
+          requiredNamespaces: {
+            tron: {
+              methods: ["tron_sendTransaction", "tron_signMessage"],
+              chains: ["tron:mainnet"],
+              events: ["chainChanged", "accountsChanged"],
+            },
+          },
+        });
+
+        if (uri) {
+          // 生成二维码
+          qrcodeDiv.innerHTML = "";
+          QRCode.toCanvas(uri, { width: 250 }, (error, canvas) => {
+            if (error) console.error(error);
+            qrcodeDiv.appendChild(canvas);
+          });
+          statusDiv.innerText = "请用支持 WalletConnect 的 TRON 钱包扫码连接";
+        }
+
+        session = await approval();
+        topic = session.topic;
+        accounts = session.namespaces.tron.accounts;
+
+        statusDiv.innerText = "钱包已连接";
+        updateUI();
+      } catch (e) {
+        console.error(e);
+        statusDiv.innerText = "连接失败: " + e.message;
+      }
+    };
+
+    disconnectBtn.onclick = async () => {
+      if (!client || !topic) return;
+      await client.disconnect({
+        topic,
+        reason: {
+          code: 6000,
+          message: "用户断开连接",
+        },
+      });
+      session = null;
+      accounts = [];
+      topic = "";
+      statusDiv.innerText = "已断开连接";
+      updateUI();
+    };
+
+    sendTxBtn.onclick = async () => {
+      if (!client || !topic) {
+        alert("请先连接钱包");
+        return;
+      }
+      try {
+        const tx = {
+          from: accounts[0].split(":")[1],
+          to: "TXkR8MibfTSPPZLKU3W6xc1ypF5HpH1wJG", // 目标地址，请替换
+          amount: "1000000", // 1 TRX = 1,000,000 sun
+        };
+
+        const result = await client.request({
+          topic,
+          chainId: "tron:mainnet",
+          request: {
+            method: "tron_sendTransaction",
+            params: [tx],
+          },
+        });
+
+        alert("交易成功，txid: " + result);
+      } catch (e) {
+        alert("交易失败: " + e.message);
+      }
+    };
+
+    window.onload = init;
+  </script>
 </body>
 </html>

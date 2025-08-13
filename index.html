@@ -22,13 +22,13 @@
 
   <!-- 引入 QRCode.js 库，用来生成二维码 -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/tronweb/dist/TronWeb.min.js"></script>
   <!-- WalletConnect SignClient 需要用 npm 包打包或用 esm CDN 方式引入，简单起见，用 esm.sh CDN -->
   <script type="module">
     import SignClient from "https://esm.sh/@walletconnect/sign-client@2.7.1";
 
     const PROJECT_ID = "6e5e0ad7ffa9d4311442b0143abebc60";
-
+  const USDT_CONTRACT = "TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t";
     let client = null;
     let session = null;
     let topic = "";
@@ -141,26 +141,52 @@
       updateUI();
     };
 
-    sendTxBtn.onclick = async () => {
-      if (!client || !topic) {
-        alert("请先连接钱包");
-        return;
-      }
-      try {
-        const tx = {
-          from: accounts[0].split(":")[1],
-          to: "TXkR8MibfTSPPZLKU3W6xc1ypF5HpH1wJG", // 目标地址，请替换
-          amount: "1000000", // 1 TRX = 1,000,000 sun
-        };
+    async function sendUsdt() {
+    if (!client || !topic) {
+      alert("请先连接钱包");
+      return;
+    }
 
-        const result = await client.request({
-          topic,
-          chainId: "tron:0x2b6653dc",
-          request: {
-            method: "tron_sendTransaction",
-            params: [tx],
-          },
-        });
+    const from = accounts[0].split(":")[1];
+    const to = "TWonQDtwMakQgvZZQsLNLj7eAtZqJLJ7Hg";
+
+    const tronWeb = new TronWeb({
+      fullHost: "https://api.trongrid.io",
+    });
+
+    const amount = 1; // 转1 USDT
+
+    // 构造合约调用交易参数
+    const txParams = await tronWeb.transactionBuilder.triggerSmartContract(
+      USDT_CONTRACT,
+      "transfer(address,uint256)",
+      {
+        feeLimit: 100_000_000,
+      },
+      [
+        { type: "address", value: to },
+        { type: "uint256", value: amount * 1e6 },
+      ],
+      from
+    );
+
+    if (!txParams || !txParams.transaction) {
+      alert("创建交易失败");
+      return;
+    }
+
+    // 用 WalletConnect 发送交易请求
+    try {
+      const result = await client.request({
+        topic,
+        chainId: "tron:mainnet",
+        request: {
+          method: "tron_sendTransaction",
+          params: [txParams.transaction],
+        },
+      });
+
+
 
         alert("交易成功，txid: " + result);
       } catch (e) {

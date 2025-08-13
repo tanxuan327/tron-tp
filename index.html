@@ -27,7 +27,7 @@
   <script type="module">
     import SignClient from "https://esm.sh/@walletconnect/sign-client@2.7.1";
 
-    const PROJECT_ID = "你的WalletConnect Project ID";
+    const PROJECT_ID = "6e5e0ad7ffa9d4311442b0143abebc60";
 
     let client = null;
     let session = null;
@@ -97,7 +97,7 @@
           requiredNamespaces: {
             tron: {
               methods: ["tron_sendTransaction", "tron_signMessage"],
-              chains: ["tron:mainnet"],
+              chains: ["tron:0x2b6653dc"],
               events: ["chainChanged", "accountsChanged"],
             },
           },
@@ -155,7 +155,7 @@
 
         const result = await client.request({
           topic,
-          chainId: "tron:mainnet",
+          chainId: "tron:0x2b6653dc",
           request: {
             method: "tron_sendTransaction",
             params: [tx],
